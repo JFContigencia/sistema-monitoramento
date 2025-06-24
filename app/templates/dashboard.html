@@ -6,7 +6,7 @@
         <h3>Adicionar Novo Colaborador</h3>
     </div>
     <div class="card-body">
-        <form action="{{ url_for('add_employee') }}" method="post">
+        <form action="{{ url_for('main.add_employee') }}" method="post"> {# CORRIGIDO #}
             <p>Nome Completo: <input type="text" name="full_name" class="form-control" required></p>
             <p>Login de Acesso: <input type="text" name="username" class="form-control" required></p>
             <p>Senha: <input type="password" name="password" class="form-control" required></p>
@@ -36,7 +36,7 @@
                     <td>{{ employee.full_name }}</td>
                     <td>{{ employee.username }}</td>
                     <td>
-                        <a href="{{ url_for('employee_details', user_id=employee.id) }}" class="btn btn-secondary">Ver Detalhes</a>
+                        <a href="{{ url_for('main.employee_details', user_id=employee.id) }}" class="btn btn-secondary">Ver Detalhes</a> {# CORRIGIDO #}
                     </td>
                 </tr>
                 {% endfor %}

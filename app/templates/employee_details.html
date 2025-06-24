@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('dashboard') }}">&larr; Voltar para o Dashboard</a>
+<a href="{{ url_for('main.dashboard') }}">&larr; Voltar para o Dashboard</a> {# CORRIGIDO #}
 <h1>Relatório de {{ employee.full_name }}</h1>
 
 <div class="card">
@@ -9,9 +9,9 @@
         <h3>Filtros e Resumo</h3>
     </div>
     <div class="card-body">
-        <a href="?filter=today" class="btn btn-secondary">Hoje</a>
-        <a href="?filter=week" class="btn btn-secondary">Semana</a>
-        <a href="?filter=month" class="btn btn-secondary">Mês</a>
+        <a href="{{ url_for('main.employee_details', user_id=employee.id, filter='today') }}" class="btn btn-secondary">Hoje</a> {# CORRIGIDO #}
+        <a href="{{ url_for('main.employee_details', user_id=employee.id, filter='week') }}" class="btn btn-secondary">Semana</a> {# CORRIGIDO #}
+        <a href="{{ url_for('main.employee_details', user_id=employee.id, filter='month') }}" class="btn btn-secondary">Mês</a> {# CORRIGIDO #}
         <hr>
         <p><strong>Total de Horas Trabalhadas no Período:</strong> 
             {% set hours = (total_work_time / 3600)|int %}
@@ -48,7 +48,7 @@
                             -
                         {% endif %}
                     </td>
-                    <td><a href="{{ url_for('session_details', session_id=session.id) }}" class="btn btn-secondary">Ver Logs e Prints</a></td>
+                    <td><a href="{{ url_for('main.session_details', session_id=session.id) }}" class="btn btn-secondary">Ver Logs e Prints</a></td> {# CORRIGIDO #}
                 </tr>
             {% else %}
                 <tr><td colspan="4">Nenhuma sessão encontrada para este período.</td></tr>

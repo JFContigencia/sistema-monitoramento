@@ -28,10 +28,10 @@
   <body>
     {% if current_user.is_authenticated and current_user.is_admin %}
     <nav class="navbar">
-      <a href="{{ url_for('dashboard') }}"><h1>Painel de Monitoramento</h1></a>
+      <a href="{{ url_for('main.dashboard') }}"><h1>Painel de Monitoramento</h1></a> {# CORRIGIDO #}
       <div>
         <span>Olá, {{ current_user.username }}</span> | 
-        <a href="{{ url_for('logout') }}">Sair</a>
+        <a href="{{ url_for('main.logout') }}">Sair</a> {# CORRIGIDO #}
       </div>
     </nav>
     {% endif %}
