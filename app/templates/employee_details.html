@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href="{{ url_for('dashboard') }}">&larr; Voltar para o Dashboard</a>
+<h1>Relatório de {{ employee.full_name }}</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Filtros e Resumo</h3>
+    </div>
+    <div class="card-body">
+        <a href="?filter=today" class="btn btn-secondary">Hoje</a>
+        <a href="?filter=week" class="btn btn-secondary">Semana</a>
+        <a href="?filter=month" class="btn btn-secondary">Mês</a>
+        <hr>
+        <p><strong>Total de Horas Trabalhadas no Período:</strong> 
+            {% set hours = (total_work_time / 3600)|int %}
+            {% set minutes = ((total_work_time % 3600) / 60)|int %}
+            {{ "%02d:%02d" % (hours, minutes) }}
+        </p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Sessões de Trabalho</h3>
+    </div>
+    <div class="card-body">
+        <table>
+            <thead>
+                <tr>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Duração</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for session in sessions %}
+                <tr>
+                    <td>{{ session.start_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ session.end_time.strftime('%d/%m/%Y %H:%M') if session.end_time else 'Em andamento' }}</td>
+                    <td>
+                        {% if session.end_time %}
+                            {% set duration = session.end_time - session.start_time %}
+                            {{ '%02d:%02d:%02d' % (duration.seconds // 3600, (duration.seconds % 3600) // 60, duration.seconds % 60) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('session_details', session_id=session.id) }}" class="btn btn-secondary">Ver Logs e Prints</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4">Nenhuma sessão encontrada para este período.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

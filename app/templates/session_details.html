@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href="{{ url_for('employee_details', user_id=session.employee.id) }}">&larr; Voltar para o Colaborador</a>
+<h2>Detalhes da Sessão de {{ session.start_time.strftime('%d/%m/%Y %H:%M') }}</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Screenshots (1 a cada 5 minutos)</h3>
+    </div>
+    <div class="card-body" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        {% for screenshot in screenshots %}
+        <div>
+            <a href="{{ url_for('uploaded_file', filename=screenshot.filepath) }}" target="_blank">
+                <img src="{{ url_for('uploaded_file', filename=screenshot.filepath) }}" alt="Screenshot" class="screenshot">
+            </a>
+            <p style="text-align: center; font-size: 0.8em;">{{ screenshot.timestamp.strftime('%H:%M:%S') }}</p>
+        </div>
+        {% else %}
+        <p>Nenhum screenshot capturado nesta sessão.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Log de Atividades (Sites e Programas)</h3>
+    </div>
+    <div class="card-body">
+        <table>
+            <thead>
+                <tr>
+                    <th>Horário</th>
+                    <th>Tipo</th>
+                    <th>Detalhe</th>
+                    <th>Tempo na Janela (s)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in activities %}
+                <tr>
+                    <td>{{ activity.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                    <td>{{ activity.activity_type }}</td>
+                    <td>{{ activity.details }}</td>
+                    <td>{{ activity.duration_seconds }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">Nenhuma atividade registrada nesta sessão.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
