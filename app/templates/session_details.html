@@ -2,7 +2,7 @@
 
 {% block content %}
 <a href="{{ url_for('main.employee_details', user_id=session.employee.id) }}">&larr; Voltar para o Colaborador</a> {# CORRIGIDO #}
-<h2>Detalhes da Sessão de {{ session.start_time.strftime('%d/%m/%Y %H:%M') }}</h2>
+<h2>Detalhes da Sessão de {{ session.start_time | localtime('%d/%m/%Y %H:%M') }}</h2>
 
 <div class="card">
     <div class="card-header">
@@ -39,7 +39,7 @@
             <tbody>
                 {% for activity in activities %}
                 <tr>
-                    <td>{{ activity.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                    <td>{{ activity.timestamp | localtime }}</td>
                     <td>{{ activity.activity_type }}</td>
                     <td>{{ activity.details }}</td>
                     <td>{{ activity.duration_seconds }}</td>

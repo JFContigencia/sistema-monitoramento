@@ -106,7 +106,34 @@ def session_details(session_id):
 @main_bp.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+@app.route('/employee/edit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_employee(user_id):
+    if not current_user.is_admin: return redirect(url_for('login'))
+    employee = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        employee.full_name = request.form['full_name']
+        password = request.form['password']
+        if password:
+            employee.set_password(password)
+        db.session.commit()
+        flash('Colaborador atualizado com sucesso!')
+        return redirect(url_for('dashboard'))
+    return render_template('edit_employee.html', title='Editar Colaborador', employee=employee)
 
+@app.route('/employee/delete/<int:user_id>', methods=['POST'])
+@login_required
+def delete_employee(user_id):
+    if not current_user.is_admin: return redirect(url_for('login'))
+    employee = User.query.get_or_404(user_id)
+    # O SQLAlchemy irá deletar em cascata os dados relacionados se configurado,
+    # mas para garantir, podemos deletar manualmente os dados associados.
+    WorkSession.query.filter_by(user_id=employee.id).delete()
+    # Adicione aqui deleções para ActivityLog e Screenshot se necessário
+    db.session.delete(employee)
+    db.session.commit()
+    flash('Colaborador e todos os seus dados foram excluídos com sucesso.')
+    return redirect(url_for('dashboard'))
 
 # --- ROTAS DA API PARA O CLIENTE WINDOWS ---
 
@@ -184,3 +211,37 @@ def api_upload_screenshot():
         db.session.commit()
         return jsonify({'status': 'success', 'path': filename})
     return jsonify({'status': 'error', 'message': 'Arquivo ou sessão inválida'}), 400
+@app.route('/api/heartbeat', methods=['POST'])
+def api_heartbeat():
+    data = request.get_json()
+    if not data or 'session_id' not in data:
+        return jsonify({'status': 'error', 'message': 'session_id faltando'}), 400
+
+    session = WorkSession.query.get(data['session_id'])
+    if session:
+        session.last_heartbeat = datetime.utcnow()
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'error', 'message': 'Sessão não encontrada'}), 404
+
+@app.route('/api/users/status')
+@login_required
+def api_users_status():
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': 'Acesso negado'}), 403
+
+    online_users = {}
+    # Encontra sessões ativas (sem end_time) cujo último heartbeat foi nos últimos 2 minutos
+    cutoff_time = datetime.utcnow() - timedelta(minutes=2)
+    active_sessions = WorkSession.query.filter(
+        WorkSession.end_time.is_(None),
+        WorkSession.last_heartbeat > cutoff_time
+    ).all()
+
+    for session in active_sessions:
+        online_users[session.user_id] = {
+            'status': 'online',
+            'session_start_time': session.start_time.isoformat() + 'Z' # Formato ISO com Z para UTC
+        }
+
+    return jsonify(online_users)

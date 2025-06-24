@@ -20,28 +20,90 @@
         <h3>Colaboradores</h3>
     </div>
     <div class="card-body">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome Completo</th>
-                    <th>Login</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in employees.items %}
-                <tr>
-                    <td>{{ employee.id }}</td>
-                    <td>{{ employee.full_name }}</td>
-                    <td>{{ employee.username }}</td>
-                    <td>
-                        <a href="{{ url_for('main.employee_details', user_id=employee.id) }}" class="btn btn-secondary">Ver Detalhes</a> {# CORRIGIDO #}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<table>
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>ID</th>
+            <th>Nome Completo</th>
+            <th>Login</th>
+            <th>Tempo Logado</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for employee in employees.items %}
+        <tr data-userid="{{ employee.id }}">
+            <td><span class="status-dot status-offline" id="status-{{ employee.id }}"></span></td>
+            <td>{{ employee.id }}</td>
+            <td>{{ employee.full_name }}</td>
+            <td>{{ employee.username }}</td>
+            <td id="timer-{{ employee.id }}">-</td>
+            <td>
+                <a href="{{ url_for('employee_details', user_id=employee.id) }}" class="btn btn-secondary">Ver Detalhes</a>
+                <a href="{{ url_for('edit_employee', user_id=employee.id) }}" class="btn btn-primary">Editar</a>
+                <form action="{{ url_for('delete_employee', user_id=employee.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este usuário e todos os seus dados? Esta ação é irreversível.');">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const activeTimers = {};
+
+        function updateUserStatus() {
+            fetch('{{ url_for("api_users_status") }}')
+            .then(response => response.json())
+            .then(data => {
+                // Primeiro, define todos como offline
+                document.querySelectorAll('.status-dot').forEach(dot => {
+                    dot.classList.remove('status-online');
+                    dot.classList.add('status-offline');
+                });
+                document.querySelectorAll('td[id^="timer-"]').forEach(timerCell => {
+                    const userId = timerCell.id.split('-')[1];
+                    if (!data[userId]) {
+                       timerCell.textContent = '-';
+                       if(activeTimers[userId]) {
+                           clearInterval(activeTimers[userId]);
+                           delete activeTimers[userId];
+                       }
+                    }
+                });
+
+                // Agora, atualiza os que estão online
+                for (const userId in data) {
+                    const userData = data[userId];
+                    const statusDot = document.getElementById(`status-${userId}`);
+                    if (statusDot) {
+                        statusDot.classList.remove('status-offline');
+                        statusDot.classList.add('status-online');
+
+                        // Inicia o cronômetro se não estiver rodando
+                        if (!activeTimers[userId]) {
+                            const startTime = new Date(userData.session_start_time);
+                            activeTimers[userId] = setInterval(() => {
+                                const now = new Date();
+                                const diff = now - startTime;
+                                const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+                                const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+                                const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+                                document.getElementById(`timer-${userId}`).textContent = `<span class="math-inline">\{hours\}\:</span>{minutes}:${seconds}`;
+                            }, 1000);
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Erro ao buscar status:', error));
+        }
+        // Atualiza status imediatamente e depois a cada 15 segundos
+        updateUserStatus();
+        setInterval(updateUserStatus, 15000); 
+    });
+</script>
 {% endblock %}

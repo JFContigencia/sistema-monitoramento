@@ -25,9 +25,10 @@ class WorkSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     end_time = db.Column(db.DateTime, index=True, nullable=True)
+    last_heartbeat = db.Column(db.DateTime, default=datetime.utcnow) # <- ADICIONE ESTA LINHA
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    activities = db.relationship('ActivityLog', backref='session', lazy='dynamic')
-    screenshots = db.relationship('Screenshot', backref='session', lazy='dynamic')
+    activities = db.relationship('ActivityLog', backref='session', lazy='dynamic', cascade="all, delete-orphan")
+    screenshots = db.relationship('Screenshot', backref='session', lazy='dynamic', cascade="all, delete-orphan")
 
 class ActivityLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)

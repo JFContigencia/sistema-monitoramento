@@ -3,10 +3,12 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
+import pytz
+from datetime import datetime
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.login_view = 'login' # a rota de login
+login_manager.login_view = 'login'
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -15,22 +17,24 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
 
-    # --- Adicione esta nova importação do Blueprint aqui ---
-    from app.routes import main_bp
-    app.register_blueprint(main_bp) # <-- NOVA LINHA: Registra o Blueprint
-
-    # Criar a pasta de uploads se não existir
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
 
-    # NOTA: O Flask-SQLAlchemy já faz isso se o app_context for ativado.
-    # Manter para garantir na primeira inicialização.
+    # --- Início da Adição do Filtro de Fuso Horário ---
+    def format_datetime_local(value, format='%d/%m/%Y %H:%M:%S'):
+        if value is None:
+            return ""
+        utc_dt = pytz.utc.localize(value)
+        local_tz = pytz.timezone('America/Sao_Paulo') # Fuso Horário GMT-3
+        local_dt = utc_dt.astimezone(local_tz)
+        return local_dt.strftime(format)
+
+    app.jinja_env.filters['localtime'] = format_datetime_local
+    # --- Fim da Adição ---
+
+    from app import routes, models
+
     with app.app_context():
         db.create_all()
-
-    # NOTE: Não precisa mais importar 'models' aqui se não for usado diretamente,
-    # mas manter a linha 'from app import routes, models' para a criação do DB
-    # na linha com python -c é válido, porém aqui só importa o blueprint.
-    # Se você já tinha `from app import models`, pode manter ou remover se não houver uso direto.
 
     return app
