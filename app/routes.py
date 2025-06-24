@@ -104,10 +104,19 @@ def employee_details(user_id):
 @login_required
 def session_details(session_id):
     if not current_user.is_admin: return redirect(url_for('main.login'))
+
+    # Adiciona a lógica para obter a página atual dos argumentos da URL
+    page = request.args.get('page', 1, type=int)
+
     session = WorkSession.query.get_or_404(session_id)
     activities = ActivityLog.query.filter_by(session_id=session_id).order_by(ActivityLog.timestamp.desc()).all()
-    screenshots = Screenshot.query.filter_by(session_id=session_id).order_by(Screenshot.timestamp.desc()).all()
-    return render_template('session_details.html', title='Detalhes da Sessão', session=session, activities=activities, screenshots=screenshots)
+
+    # Modifica a consulta de screenshots para usar paginação
+    screenshots_pagination = Screenshot.query.filter_by(session_id=session_id).order_by(Screenshot.timestamp.desc()).paginate(
+        page=page, per_page=10, error_out=False
+    )
+
+    return render_template('session_details.html', title='Detalhes da Sessão', session=session, activities=activities, screenshots=screenshots_pagination)
 
 # Adicione este bloco antes de '--- ROTAS DA API ---'
 

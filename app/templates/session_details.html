@@ -14,7 +14,7 @@
             <a href="{{ url_for('main.uploaded_file', filename=screenshot.filepath) }}" target="_blank"> {# CORRIGIDO #}
                 <img src="{{ url_for('main.uploaded_file', filename=screenshot.filepath) }}" alt="Screenshot" class="screenshot"> {# CORRIGIDO #}
             </a>
-            <p style="text-align: center; font-size: 0.8em;">{{ screenshot.timestamp.strftime('%H:%M:%S') }}</p>
+<p style="text-align: center; font-size: 0.8em;">{{ screenshot.timestamp | localtime('%H:%M:%S') }}</p>
         </div>
         {% else %}
         <p>Nenhum screenshot capturado nesta sessão.</p>
@@ -24,31 +24,34 @@
 
 <div class="card">
     <div class="card-header">
-        <h3>Log de Atividades (Sites e Programas)</h3>
+        <h3>Screenshots (10 por página)</h3>
     </div>
-    <div class="card-body">
-        <table>
-            <thead>
-                <tr>
-                    <th>Horário</th>
-                    <th>Tipo</th>
-                    <th>Detalhe</th>
-                    <th>Tempo na Janela (s)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for activity in activities %}
-                <tr>
-                    <td>{{ activity.timestamp | localtime }}</td>
-                    <td>{{ activity.activity_type }}</td>
-                    <td>{{ activity.details }}</td>
-                    <td>{{ activity.duration_seconds }}</td>
-                </tr>
-                {% else %}
-                <tr><td colspan="4">Nenhuma atividade registrada nesta sessão.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card-body" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        {% for screenshot in screenshots.items %}
+        <div>
+            <a href="{{ url_for('main.uploaded_file', filename=screenshot.filepath) }}" target="_blank">
+                <img src="{{ url_for('main.uploaded_file', filename=screenshot.filepath) }}" alt="Screenshot" class="screenshot">
+            </a>
+            <p style="text-align: center; font-size: 0.8em;">{{ screenshot.timestamp | localtime('%H:%M:%S') }}</p>
+        </div>
+        {% else %}
+        <p>Nenhum screenshot capturado nesta sessão.</p>
+        {% endfor %}
+    </div>
+    <div class="card-footer" style="display: flex; justify-content: space-between; padding: 0.75rem 1.25rem;">
+        <span>Página {{ screenshots.page }} de {{ screenshots.pages }}.</span>
+        <div>
+            {% if screenshots.has_prev %}
+                <a href="{{ url_for('main.session_details', session_id=session.id, page=screenshots.prev_num) }}" class="btn btn-secondary">
+                    &larr; Página Anterior
+                </a>
+            {% endif %}
+            {% if screenshots.has_next %}
+                <a href="{{ url_for('main.session_details', session_id=session.id, page=screenshots.next_num) }}" class="btn btn-secondary">
+                    Próxima Página &rarr;
+                </a>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
