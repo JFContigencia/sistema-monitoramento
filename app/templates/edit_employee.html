@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('dashboard') }}">&larr; Voltar para o Dashboard</a>
+<a href="{{ url_for('main.dashboard') }}">&larr; Voltar para o Dashboard</a>
 <div class="card" style="margin-top: 2rem;">
     <div class="card-header">
         <h3>Editando Colaborador: {{ employee.full_name }}</h3>
     </div>
     <div class="card-body">
-        <form action="{{ url_for('edit_employee', user_id=employee.id) }}" method="post">
+        <form action="{{ url_for('main.edit_employee', user_id=employee.id) }}" method="post">
             <p>Nome Completo: <input type="text" name="full_name" class="form-control" value="{{ employee.full_name }}" required></p>
             <p>Login de Acesso (não pode ser alterado): <input type="text" name="username" class="form-control" value="{{ employee.username }}" readonly></p>
             <p>Nova Senha (deixe em branco para não alterar): <input type="password" name="password" class="form-control"></p>
