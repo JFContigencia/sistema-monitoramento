@@ -41,3 +41,17 @@ cliente-monitor/
 ├── main.py               # Arquivo principal que cria a interface gráfica (login, etc.)
 ├── tracker.py            # O coração do monitor, com toda a lógica de rastreamento
 └── requirements.txt      # Lista das bibliotecas Python necessárias para o cliente
+
+sudo systemctl status monitor
+
+Aplicar alterações
+
+sudo systemctl restart monitor
+
+Desligar o serviço
+
+sudo systemctl stop monitor
+
+Ligar o serviço
+
+sudo systemctl start monitor
